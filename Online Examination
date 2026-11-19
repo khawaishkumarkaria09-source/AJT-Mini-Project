@@ -1,0 +1,320 @@
+Code Snippet for exam.jsp :-
+
+<%@page import="java.util.List"%>
+<%@page import="com.exam.model.Question"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%
+    if (session.getAttribute("user") == null || session.getAttribute("examQuestions") == null) {
+        response.sendRedirect("index.jsp");
+        return;
+    }
+    List<Question> questions = (List<Question>) session.getAttribute("examQuestions");
+%>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Online Exam</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #eef2f5; margin: 0; padding: 20px; }
+        .container { max-width: 750px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .q-box { border-bottom: 1px solid #ddd; padding: 15px 0; }
+        .q-title { font-weight: bold; margin-bottom: 10px; }
+        .option { margin: 6px 0; }
+        input[type=submit] { background: #28a745; color: #fff; border: none; padding: 12px 25px; border-radius: 4px; font-size: 16px; cursor: pointer; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Welcome, <%= session.getAttribute("name") %></h2>
+        <p>Please select the correct answer for each of the 5 questions below:</p>
+        <hr>
+
+        <form action="SubmitExamServlet" method="POST">
+            <% 
+               int qNum = 1;
+               for (Question q : questions) { 
+            %>
+            <div class="q-box">
+                <div class="q-title"><%= qNum %>. <%= q.getQuestionText() %></div>
+                <div class="option"><label><input type="radio" name="q_<%= q.getId() %>" value="1" required> <%= q.getOpt1() %></label></div>
+                <div class="option"><label><input type="radio" name="q_<%= q.getId() %>" value="2"> <%= q.getOpt2() %></label></div>
+                <div class="option"><label><input type="radio" name="q_<%= q.getId() %>" value="3"> <%= q.getOpt3() %></label></div>
+                <div class="option"><label><input type="radio" name="q_<%= q.getId() %>" value="4"> <%= q.getOpt4() %></label></div>
+            </div>
+            <% 
+               qNum++;
+               } 
+            %>
+            <input type="submit" value="Submit Exam">
+        </form>
+    </div>
+</body>
+</html>
+
+
+Code Snippet for index.html :-
+
+Exam Portal
+Enter your credentials to begin
+Student ID / Username 
+Password 
+Start Assessment 
+Exam Instructions: 
+•	5 randomized multiple-choice questions.
+•	All questions are mandatory.
+•	Results will be recorded upon submission.
+
+Code Snippet for index.jsp :-
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Online Exam - Login</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f9; display: flex; justify-content: center; align-items: center; height: 90vh; }
+        .card { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 320px; }
+        input[type=text], input[type=password] { width: 100%; padding: 10px; margin: 8px 0 16px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        input[type=submit] { width: 100%; background: #007bff; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        .error { color: red; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Student Login</h2>
+        <% if (request.getAttribute("error") != null) { %>
+            <div class="error"><%= request.getAttribute("error") %></div>
+        <% } %>
+        <form action="LoginServlet" method="POST">
+            <label>Username:</label>
+            <input type="text" name="username" placeholder="e.g. student1" required>
+            <label>Password:</label>
+            <input type="password" name="password" placeholder="e.g. password123" required>
+            <input type="submit" value="Start Exam">
+        </form>
+    </div>
+</body>
+</html>
+
+Code Snippet for result.jsp :-
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exam Result</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f9; display: flex; justify-content: center; align-items: center; height: 90vh; }
+        .result-card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; width: 350px; }
+        .score { font-size: 28px; font-weight: bold; color: #28a745; margin: 20px 0; }
+        a { display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="result-card">
+        <h2>Exam Completed!</h2>
+        <p>Candidate: <strong><%= session.getAttribute("name") %></strong></p>
+        <div class="score"><%= request.getAttribute("score") %> / <%= request.getAttribute("total") %></div>
+        <p>Your result has been successfully recorded in the database.</p>
+        <a href="index.jsp">Log Out</a>
+    </div>
+</body>
+</html>
+
+Code Snippet for Question.java :-
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exam Result</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f9; display: flex; justify-content: center; align-items: center; height: 90vh; }
+        .result-card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; width: 350px; }
+        .score { font-size: 28px; font-weight: bold; color: #28a745; margin: 20px 0; }
+        a { display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="result-card">
+        <h2>Exam Completed!</h2>
+        <p>Candidate: <strong><%= session.getAttribute("name") %></strong></p>
+        <div class="score"><%= request.getAttribute("score") %> / <%= request.getAttribute("total") %></div>
+        <p>Your result has been successfully recorded in the database.</p>
+        <a href="index.jsp">Log Out</a>
+    </div>
+</body>
+</html>
+Code Snippet for LoginServlet.java :-
+
+package com.exam.servlet;
+
+import com.exam.model.Question;
+import com.exam.util.DBConnection;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+@WebServlet("/LoginServlet")
+public class LoginServlet extends HttpServlet {
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        String u = request.getParameter("username");
+        String p = request.getParameter("password");
+
+        try (Connection con = DBConnection.getConnection()) {
+            if (con == null) {
+                request.setAttribute("error", "Database connection failed! Check DBConnection.java credentials & MySQL service.");
+                request.getRequestDispatcher("index.jsp").forward(request, response);
+                return;
+            }
+
+            // 1. Verify User Credentials
+            String authSql = "SELECT full_name FROM students WHERE username=? AND password=?";
+            try (PreparedStatement psAuth = con.prepareStatement(authSql)) {
+                psAuth.setString(1, u);
+                psAuth.setString(2, p);
+                
+                try (ResultSet rsAuth = psAuth.executeQuery()) {
+                    if (rsAuth.next()) {
+                        HttpSession session = request.getSession();
+                        session.setAttribute("user", u);
+                        session.setAttribute("name", rsAuth.getString("full_name"));
+
+                        // 2. Fetch 5 Random Questions from MySQL
+                        String qSql = "SELECT * FROM questions ORDER BY RAND() LIMIT 5";
+                        try (PreparedStatement psQ = con.prepareStatement(qSql);
+                             ResultSet rsQ = psQ.executeQuery()) {
+
+                            List<Question> qList = new ArrayList<>();
+                            while (rsQ.next()) {
+                                qList.add(new Question(
+                                    rsQ.getInt("id"),
+                                    rsQ.getString("question_text"),
+                                    rsQ.getString("opt1"),
+                                    rsQ.getString("opt2"),
+                                    rsQ.getString("opt3"),
+                                    rsQ.getString("opt4"),
+                                    rsQ.getInt("correct_opt")
+                                ));
+                            }
+
+                            if (qList.isEmpty()) {
+                                request.setAttribute("error", "Login successful, but no questions found in the 'questions' table!");
+                                request.getRequestDispatcher("index.jsp").forward(request, response);
+                                return;
+                            }
+
+                            session.setAttribute("examQuestions", qList);
+                            response.sendRedirect("exam.jsp");
+                        }
+                    } else {
+                        request.setAttribute("error", "Invalid Username or Password");
+                        request.getRequestDispatcher("index.jsp").forward(request, response);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace(); // Logs error to Apache Tomcat / GlassFish output in NetBeans
+            request.setAttribute("error", "Server Error: " + e.getMessage());
+            request.getRequestDispatcher("index.jsp").forward(request, response);
+        }
+    }
+}
+
+Code Snippet for SubmitExamServlet.java :-
+
+package com.exam.servlet;
+
+import com.exam.model.Question;
+import com.exam.util.DBConnection;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.util.List;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.*;
+
+@WebServlet("/SubmitExamServlet")
+public class SubmitExamServlet extends HttpServlet {
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        HttpSession session = request.getSession();
+        String username = (String) session.getAttribute("user");
+        List<Question> questions = (List<Question>) session.getAttribute("examQuestions");
+
+        if (username == null || questions == null) {
+            response.sendRedirect("index.jsp");
+            return;
+        }
+
+        int score = 0;
+        int total = questions.size();
+
+        for (Question q : questions) {
+            String selected = request.getParameter("q_" + q.getId());
+            if (selected != null && Integer.parseInt(selected) == q.getCorrectOpt()) {
+                score++;
+            }
+        }
+
+        // Save Result to MySQL Database
+        try (Connection con = DBConnection.getConnection()) {
+            String sql = "INSERT INTO results (username, score, total_questions) VALUES (?, ?, ?)";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, username);
+            ps.setInt(2, score);
+            ps.setInt(3, total);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        request.setAttribute("score", score);
+        request.setAttribute("total", total);
+        request.getRequestDispatcher("result.jsp").forward(request, response);
+    }
+}
+
+Code Snippet for DBConnection.java :-
+
+package com.exam.util;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+
+public class DBConnection {
+    // Port 3306 is the default MySQL port in XAMPP
+    private static final String URL = "jdbc:mysql://localhost:3307/online_exam_db?useSSL=false&allowPublicKeyRetrieval=true";
+    private static final String USER = "root";       
+    private static final String PASS = "";           // Default XAMPP MySQL password is blank/empty
+
+    public static Connection getConnection() {
+        Connection con = null;
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            con = DriverManager.getConnection(URL, USER, PASS);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return con;
+    }
+}
+
+
+Note :-
+We need to add few libraries such as sql connector jar and jstl 1.2.7 if required depending on the version of Apache Netbeans
